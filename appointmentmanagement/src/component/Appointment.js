@@ -3,38 +3,41 @@ import "../component/Appointment.css";
 const Appointment = () => {
     const [appointment, setAppointment] = useState({ fullname: "", phoneNumber: "", date: "" });
     const [appointmentList, setAppointmentList] = useState([]);
-
+    const [currentId , setCurrentId] = useState(null);
     const [updateToggle, setUpdateToggle] = useState(false);
     //handle user input
     const handleAppointmentInput = (event) => {
-        const { name, value } = event.target;
-        setAppointment((appoint) => ({ ...appoint, [name]: value }));
+        const {name, value} = event.target;
+        setAppointment({...appointment,[name]: value});
     }
-
     //handle add appointment
     const handleAddAppointment = (event) => {
         event.preventDefault();
-        setAppointmentList((list) => [...list, appointment])
+        setAppointmentList([...appointmentList,{id: appointmentList.length + 1, ...appointment}]);
         setAppointment({ fullname: "", phoneNumber: "", date: "" });
     }
 
     //handle update list
-    const handleUpdateList = (index) => {
-        console.log(index);
-        setUpdateToggle(true)
+    const handleUpdateList = (updateDetails) => {
+        setAppointment({fullname: updateDetails.fullname, phoneNumber: updateDetails.phoneNumber, date: updateDetails.date})
+        setCurrentId(updateDetails.id);
+        setUpdateToggle(true);
+    }
+
+    const submitUpdateListData =(e)=>{
+        e.preventDefault();
+        setAppointmentList(appointmentList.map((al)=> al.id === currentId ? {...appointmentList, ...appointment} : appointmentList));
+        setAppointment({ fullname: "", phoneNumber: "", date: "" });
+        setCurrentId(null);
+        setUpdateToggle(false);
     }
 
     //handle specific delete
-    const handleSpecificDelete =(index)=>{
-        console.log(index)
-        const deleteSpecific = [...appointmentList];
-        deleteSpecific.splice(index,1);
-        setAppointmentList(deleteSpecific)
+    const handleSpecificDelete =(deleteId)=>{
+        setAppointmentList(appointmentList.filter((f)=> f.id !== deleteId));
     }
 
-    const submitUpdateListData =()=>{
-        setUpdateToggle(false)
-    }
+    
     return (
         <div className='container'>
             <h1 className='title'>Appointment Management System</h1>
@@ -74,15 +77,15 @@ const Appointment = () => {
                             <div className='display-appointment-values'>
                                 {appointmentList?.map((list, index) => {
                                     return (
-                                        <div className='inner-container' key={index}>
+                                        <div className='inner-container' key={list.id}>
                                             <div className='list-container' >
                                                 <p className='list-value'>{list.fullname}</p>
                                                 <p className='list-value'>{list.phoneNumber}</p>
                                                 <p className='list-value'>{list.date}</p>
                                             </div>
                                             <div className='button-container'>
-                                                <button className='list-button' onClick={() => { handleUpdateList(index+1) }}>Edit</button>
-                                                <button className='list-button' onClick={() => { handleSpecificDelete(index+1) }}>Delete</button>
+                                                <button className='list-button' onClick={() => { handleUpdateList(list) }}>Edit</button>
+                                                <button className='list-button' onClick={() => { handleSpecificDelete(list.id) }}>Delete</button>
                                             </div>
                                         </div>
                                     )
